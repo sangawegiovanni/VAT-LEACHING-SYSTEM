@@ -282,12 +282,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <script>
-// ── CHANGE THESE ──────────────────────────────────────────
-const BROKER   = 'wss://92a3e49303d34dd29c1916a2d53ffc13.s1.eu.hivemq.cloud:8884/mqtt';
-const MQTT_USER = 'giovanni';   // ← change this
-const MQTT_PASS = 'Mchili123#';   // ← change this
-const TOPIC     = 'vatleaching/device1/data';
-// ─────────────────────────────────────────────────────────
+// ===== HIVEMQ CLOUD - READ-ONLY CREDENTIAL =====
+// IMPORTANT: This credential has SUBSCRIBE-ONLY permission on topic: vatleaching/device1/data
+// Even if exposed, it cannot publish or affect your devices
+const BROKER = 'wss://92a3e49303d34dd29c1916a2d53ffc13.s1.eu.hivemq.cloud:8884/mqtt';
+const TOPIC  = 'vatleaching/device1/data';
+const MQTT_USER = 'vat_dashboard_reader';
+const MQTT_PASS = 'Mchili123#';
 
 function updateClock() {
   const now = new Date();
@@ -297,14 +298,11 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-function setDot(id, on) {
-  const el = document.getElementById(id);
-  if (el) el.className = 'pump-dot ' + (on ? 'on' : 'off');
-}
 function setStatus(id, text, cls) {
   const el = document.getElementById(id);
   if (el) { el.textContent = text; el.className = 'gauge-status ' + cls; }
 }
+
 function addNotif(type, msg) {
   const list = document.getElementById('notifList');
   if (list.firstElementChild && !list.firstElementChild.classList.contains('notif-item')) list.innerHTML = '';
@@ -377,8 +375,15 @@ function updateDashboard(data) {
 
   const pump = (data.pump||'OFF').toString().trim();
   document.getElementById('pumpStatusInTank').textContent = pump;
-  setDot('pumpDot', pump === 'ON');
-  document.getElementById('pumpLabel').textContent = pump === 'ON' ? 'PUMP RUNNING' : 'PUMP STOPPED';
+  const pumpDot = document.getElementById('pumpDot');
+  const pumpLabel = document.getElementById('pumpLabel');
+  if (pump === 'ON') {
+    pumpDot.className = 'pump-dot on';
+    pumpLabel.textContent = 'PUMP RUNNING';
+  } else {
+    pumpDot.className = 'pump-dot off';
+    pumpLabel.textContent = 'PUMP STOPPED';
+  }
   if (prevPump !== null && pump !== prevPump) addNotif('NOTIFY','Pump changed to '+pump);
   prevPump = pump;
 
@@ -395,14 +400,17 @@ window.addEventListener('load', () => {
     return;
   }
 
+  // Generate unique client ID for each browser tab
+  const clientId = 'vat_dash_' + Math.random().toString(16).substr(2, 8) + '_' + Date.now();
+
   const client = mqtt.connect(BROKER, {
-    clientId:        'vat_dash_' + Math.random().toString(16).substr(2, 8),
-    username:        MQTT_USER,
-    password:        MQTT_PASS,
-    clean:           true,
+    clientId: clientId,
+    username: MQTT_USER,
+    password: MQTT_PASS,
+    clean: true,
     reconnectPeriod: 4000,
-    connectTimeout:  15000,
-    keepalive:       60
+    connectTimeout: 15000,
+    keepalive: 60
   });
 
   client.on('connect', () => {
