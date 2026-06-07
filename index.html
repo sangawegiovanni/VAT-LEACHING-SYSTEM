@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAT Leaching System - Live Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #0d2040 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(10, 22, 40, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #00d4ff;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: #4a9eff;
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-online {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+        
+        .status-offline {
+            background: rgba(255, 60, 60, 0.2);
+            color: #ff3c3c;
+            border: 1px solid #ff3c3c;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, #0a1628, #0d2040);
+            border: 1px solid #1a3a6b;
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #4a9eff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .value-large {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        
+        .value-medium {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .unit {
+            font-size: 14px;
+            color: #4a9eff;
+        }
+        
+        .gauge {
+            background: #1a3a6b;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .gauge-fill {
+            background: linear-gradient(90deg, #00d4ff, #0066ff);
+            height: 100%;
+            transition: width 0.5s;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button-off {
+            background: linear-gradient(135deg, #ff3c3c, #cc0000);
+        }
+        
+        .last-update {
+            text-align: center;
+            color: #4a9eff;
+            font-size: 11px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .value-large {
+                font-size: 32px;
+            }
+            .value-medium {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-icon">⚗️</div>
+            <h1>VAT LEACHING SYSTEM</h1>
+            <div class="subtitle">METALLURGICAL PROCESS CONTROL</div>
+            <div class="status-badge" id="statusBadge">🔌 Connecting...</div>
+        </div>
+        
+        <div class="grid">
+            <!-- pH Card -->
+            <div class="card">
+                <div class="card-title">⚡ pH LEVEL</div>
+                <div class="value-large" id="ph">--<span class="unit"> pH</span></div>
+                <div class="gauge"><div class="gauge-fill" id="phGauge" style="width: 0%"></div></div>
+                <div id="phStatus">Status: --</div>
+            </div>
+            
+            <!-- Temperature Card -->
+            <div class="card">
+                <div class="card-title">🌡️ TEMPERATURE</div>
+                <div class="value-large" id="temp">--<span class="unit"> °C</span></div>
+                <div class="gauge"><div class="gauge-fill" id="tempGauge" style="width: 0%"></div></div>
+                <div id="tempStatus">Status: --</div>
+            </div>
+            
+            <!-- ORP Card -->
+            <div class="card">
+                <div class="card-title">🔋 ORP (REDOX)</div>
+                <div class="value-large" id="orp">--<span class="unit"> mV</span></div>
+                <div>Optimal: 400-600 mV</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Tank 1 Card -->
+            <div class="card">
+                <div class="card-title">💧 LEACHING VAT</div>
+                <div class="value-medium" id="wl1">--<span class="unit"> cm</span></div>
+                <div class="gauge"><div class="gauge-fill" id="wl1Gauge" style="width: 0%"></div></div>
+                <div>Distance: <span id="d1">--</span> cm</div>
+            </div>
+            
+            <!-- Tank 2 Card -->
+            <div class="card">
+                <div class="card-title">💧 SOLUTION TANK</div>
+                <div class="value-medium" id="wl2">--<span class="unit"> cm</span></div>
+                <div class="gauge"><div class="gauge-fill" id="wl2Gauge" style="width: 0%"></div></div>
+                <div>Distance: <span id="d2">--</span> cm</div>
+            </div>
+            
+            <!-- Process Parameters -->
+            <div class="card">
+                <div class="card-title">🧪 PROCESS PARAMETERS</div>
+                <div class="value-large" id="vol">--<span class="unit"> L</span></div>
+                <div>Solution Volume</div>
+                <div class="value-medium" style="color:#00ff88" id="lime">--<span class="unit"> kg</span></div>
+                <div>Lime Required</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Controls Card -->
+            <div class="card">
+                <div class="card-title">⚙️ EQUIPMENT CONTROL</div>
+                <div class="control-group">
+                    <button id="pumpOnBtn" style="background:#00ff88; color:#000;">🔘 PUMP ON</button>
+                    <button id="pumpOffBtn" class="button-off">⏹️ PUMP OFF</button>
+                </div>
+                <div class="control-group">
+                    <button id="heaterOnBtn" style="background:#ff8800;">🔥 HEATER ON</button>
+                    <button id="heaterOffBtn" class="button-off">❄️ HEATER OFF</button>
+                </div>
+                <div class="control-group">
+                    <button id="agitatorOnBtn" style="background:#00d4ff;">🔄 AGITATOR ON</button>
+                    <button id="agitatorOffBtn" class="button-off">⏹️ AGITATOR OFF</button>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #1a3a6b; border-radius: 8px;">
+                    <div>Pump: <strong id="pumpStatus">--</strong></div>
+                    <div>Heater: <strong id="heaterStatus">--</strong></div>
+                    <div>Agitator: <strong id="agitatorStatus">--</strong></div>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="card">
+                <div class="card-title">📡 DEVICE INFO</div>
+                <div id="uptime">Uptime: --</div>
+                <div id="lastMsg">Last message: --</div>
+                <div style="margin-top: 15px; padding: 10px; background: #1a3a6b; border-radius: 8px; font-size: 11px;">
+                    🌍 Anyone with this link can monitor the system<br>
+                    🔐 Control commands require authentication<br>
+                    📡 Data transmitted via MQTT
+                </div>
+            </div>
+        </div>
+        
+        <div class="last-update" id="lastUpdate">Waiting for data...</div>
+    </div>
+    
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // MQTT Connection
+        const client = mqtt.connect("wss://broker.hivemq.com:8000/mqtt");
+        
+        // Topics
+        const subscribeTopic = "vatleaching/device1/data";
+        const publishTopic = "vatleaching/device1/cmd";
+        
+        let lastUpdateTime = Date.now();
+        
+        client.on("connect", function() {
+            console.log("✅ MQTT Connected!");
+            document.getElementById("statusBadge").innerHTML = "🟢 ONLINE";
+            document.getElementById("statusBadge").className = "status-badge status-online";
+            client.subscribe(subscribeTopic, function(err) {
+                if (!err) console.log("Subscribed to:", subscribeTopic);
+            });
+        });
+        
+        client.on("message", function(topic, message) {
+            try {
+                const data = JSON.parse(message.toString());
+                console.log("📊 Data received:", data);
+                
+                // Update all values
+                updateValue("ph", data.ph, 2);
+                updateValue("temp", data.temp, 1);
+                updateValue("orp", data.orp, 0);
+                updateValue("wl1", data.wl1, 1);
+                updateValue("wl2", data.wl2, 1);
+                updateValue("d1", data.d1, 1);
+                updateValue("d2", data.d2, 1);
+                updateValue("vol", data.vol, 1);
+                updateValue("lime", data.lime, 1);
+                
+                // Update status values
+                if (data.pump) document.getElementById("pumpStatus").innerText = data.pump;
+                if (data.heater) document.getElementById("heaterStatus").innerText = data.heater;
+                if (data.agitator) document.getElementById("agitatorStatus").innerText = data.agitator;
+                if (data.uptime) document.getElementById("uptime").innerHTML = "Uptime: " + data.uptime;
+                
+                // Update gauges
+                const phPercent = (data.ph / 14) * 100;
+                document.getElementById("phGauge").style.width = Math.min(100, phPercent) + "%";
+                
+                const tempPercent = (data.temp / 60) * 100;
+                document.getElementById("tempGauge").style.width = Math.min(100, tempPercent) + "%";
+                
+                const wl1Percent = (data.wl1 / 15) * 100;
+                document.getElementById("wl1Gauge").style.width = Math.min(100, wl1Percent) + "%";
+                
+                const wl2Percent = (data.wl2 / 9) * 100;
+                document.getElementById("wl2Gauge").style.width = Math.min(100, wl2Percent) + "%";
+                
+                // Update status text
+                updatePhStatus(data.ph);
+                updateTempStatus(data.temp);
+                
+                lastUpdateTime = Date.now();
+                document.getElementById("lastUpdate").innerHTML = "Last update: " + new Date().toLocaleTimeString();
+                document.getElementById("lastMsg").innerHTML = "Last message: " + new Date().toLocaleTimeString();
+                
+            } catch(e) {
+                console.error("Parse error:", e);
+            }
+        });
+        
+        function updateValue(id, value, decimals) {
+            const element = document.getElementById(id);
+            if (element && value !== undefined && value !== null) {
+                element.innerHTML = value.toFixed(decimals) + element.innerHTML.slice(element.innerHTML.indexOf('<'));
+                if (!element.innerHTML.includes('<')) {
+                    element.innerHTML = value.toFixed(decimals) + '<span class="unit">' + getUnit(id) + '</span>';
+                }
+            }
+        }
+        
+        function getUnit(id) {
+            const units = {
+                ph: " pH", temp: " °C", orp: " mV", wl1: " cm", wl2: " cm",
+                d1: " cm", d2: " cm", vol: " L", lime: " kg"
+            };
+            return units[id] || "";
+        }
+        
+        function updatePhStatus(ph) {
+            const statusEl = document.getElementById("phStatus");
+            if (ph > 12 || ph < 4) {
+                statusEl.innerHTML = "Status: <span style='color:#ff3c3c'>⚠️ CRITICAL</span>";
+            } else if (ph > 10.5) {
+                statusEl.innerHTML = "Status: <span style='color:#ffa000'>⚠️ HIGH</span>";
+            } else if (ph < 6) {
+                statusEl.innerHTML = "Status: <span style='color:#ff8800'>⚠️ LOW</span>";
+            } else {
+                statusEl.innerHTML = "Status: <span style='color:#00ff88'>✅ NORMAL</span>";
+            }
+        }
+        
+        function updateTempStatus(temp) {
+            const statusEl = document.getElementById("tempStatus");
+            if (temp > 45) {
+                statusEl.innerHTML = "Status: <span style='color:#ff3c3c'>⚠️ OVERHEAT</span>";
+            } else if (temp < 20) {
+                statusEl.innerHTML = "Status: <span style='color:#ff8800'>⚠️ LOW TEMP</span>";
+            } else {
+                statusEl.innerHTML = "Status: <span style='color:#00ff88'>✅ NORMAL</span>";
+            }
+        }
+        
+        client.on("error", function(err) {
+            console.error("MQTT Error:", err);
+            document.getElementById("statusBadge").innerHTML = "🔴 OFFLINE";
+            document.getElementById("statusBadge").className = "status-badge status-offline";
+        });
+        
+        // Send commands via MQTT
+        function sendCommand(command, value) {
+            const msg = JSON.stringify({ [command]: value });
+            client.publish(publishTopic, msg);
+            console.log("📤 Command sent:", msg);
+        }
+        
+        // Button handlers
+        document.getElementById("pumpOnBtn").onclick = () => sendCommand("pump", "ON");
+        document.getElementById("pumpOffBtn").onclick = () => sendCommand("pump", "OFF");
+        document.getElementById("heaterOnBtn").onclick = () => sendCommand("heater", "ON");
+        document.getElementById("heaterOffBtn").onclick = () => sendCommand("heater", "OFF");
+        document.getElementById("agitatorOnBtn").onclick = () => sendCommand("agitator", "ON");
+        document.getElementById("agitatorOffBtn").onclick = () => sendCommand("agitator", "OFF");
+        
+        // Connection status checker
+        setInterval(function() {
+            if (Date.now() - lastUpdateTime > 30000) {
+                document.getElementById("statusBadge").innerHTML = "🔴 OFFLINE";
+                document.getElementById("statusBadge").className = "status-badge status-offline";
+                document.getElementById("lastUpdate").innerHTML = "⚠️ No data for 30 seconds";
+            } else {
+                document.getElementById("statusBadge").innerHTML = "🟢 ONLINE";
+                document.getElementById("statusBadge").className = "status-badge status-online";
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
