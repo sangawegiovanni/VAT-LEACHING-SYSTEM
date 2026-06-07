@@ -13,6 +13,7 @@
     border-bottom:2px solid #00d4ff;
     padding:12px 20px;
     display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:8px;
   }
   .header-logo{display:flex;align-items:center;gap:12px;}
   .logo-icon{
@@ -27,6 +28,10 @@
   }
   .logo-text p{font-size:10px;color:#4a9eff;letter-spacing:2px;}
   .header-right{text-align:right;}
+  .conn-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;justify-content:flex-end;}
+  .conn-dot{width:10px;height:10px;border-radius:50%;background:#ff3c3c;transition:all 0.3s;}
+  .conn-dot.live{background:#00c850;box-shadow:0 0 8px #00c850;}
+  .conn-label{font-size:10px;color:#4a9eff;letter-spacing:2px;}
   .header-time{font-size:20px;font-weight:bold;color:#00d4ff;}
   .header-date{font-size:11px;color:#4a9eff;}
 
@@ -90,15 +95,16 @@
 
   .pump-card{
     grid-column:1/-1;display:flex;align-items:center;
-    justify-content:space-between;padding:14px 20px;
+    justify-content:space-between;padding:14px 20px;flex-wrap:wrap;gap:12px;
   }
+  .actuators-row{display:flex;gap:24px;flex-wrap:wrap;}
   .pump-indicator{display:flex;align-items:center;gap:12px;}
   .pump-dot{width:18px;height:18px;border-radius:50%;}
   .pump-dot.on{background:#00c850;box-shadow:0 0 12px #00c850;animation:pulse 1.5s ease-in-out infinite;}
   .pump-dot.off{background:#ff3c3c;box-shadow:0 0 12px #ff3c3c;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.2)}}
-  .pump-label{font-size:18px;font-weight:bold;}
-  .pump-sublabel{font-size:11px;color:#4a9eff;}
+  .pump-label{font-size:16px;font-weight:bold;}
+  .pump-sublabel{font-size:10px;color:#4a9eff;}
 
   .notif-card{grid-column:1/-1;max-height:220px;overflow-y:auto;}
   .notif-list{display:flex;flex-direction:column;gap:6px;}
@@ -108,14 +114,19 @@
   .notif-time{color:#4a9eff;font-size:10px;min-width:60px;}
   .notif-type{font-weight:bold;min-width:90px;font-size:10px;letter-spacing:1px;}
   .notif-msg{flex:1;color:#cce4ff;}
-  .notif-icon{font-size:16px;}
 
   ::-webkit-scrollbar{width:4px;}
   ::-webkit-scrollbar-track{background:#0a1628;}
   ::-webkit-scrollbar-thumb{background:#1a3a6b;border-radius:2px;}
+
+  @media(max-width:600px){
+    .main{grid-template-columns:1fr;}
+    .pump-card{flex-direction:column;align-items:flex-start;}
+  }
 </style>
 </head>
 <body>
+
 <div class="header">
   <div class="header-logo">
     <div class="logo-icon">⚗️</div>
@@ -125,181 +136,365 @@
     </div>
   </div>
   <div class="header-right">
+    <div class="conn-row">
+      <div class="conn-dot" id="connDot"></div>
+      <span class="conn-label" id="connLabel">CONNECTING...</span>
+    </div>
     <div class="header-time" id="clock">--:--:--</div>
     <div class="header-date" id="datestr">Loading...</div>
   </div>
 </div>
+
 <div class="main">
-  <div class='card'>
-    <div class='card-title'>&#9670; pH Level</div>
-    <div class='gauge-container'>
-      <div class='gauge-wrap'><svg viewBox='0 0 120 70'>
-        <path d='M10,60 A50,50 0 0,1 110,60' fill='none' stroke='#1a3a6b' stroke-width='8' stroke-linecap='round'/>
-        <path d='M10,60 A50,50 0 0,1 50,14'  fill='none' stroke='#ff3c3c' stroke-width='8' stroke-linecap='round'/>
-        <path d='M50,14 A50,50 0 0,1 85,18'  fill='none' stroke='#ffa000' stroke-width='8' stroke-linecap='round'/>
-        <path d='M85,18 A50,50 0 0,1 110,60' fill='none' stroke='#00c850' stroke-width='8' stroke-linecap='round'/>
-        <line x1='60' y1='60' x2='60' y2='60' stroke='white' stroke-width='2.5' stroke-linecap='round'/>
-        <circle cx='60' cy='60' r='4' fill='white'/>
-        <text x='5'   y='70' fill='#4a9eff' font-size='8'>0</text>
-        <text x='54'  y='12' fill='#4a9eff' font-size='8'>7</text>
-        <text x='108' y='70' fill='#4a9eff' font-size='8'>14</text>
-      </svg></div>
-      <div class='gauge-info'>
-        <div class='gauge-value' id="phValue">7.00</div>
-        <div class='gauge-unit'>pH</div>
-        <div class='gauge-status status-normal' id="phStatus">NORMAL</div>
+
+  <!-- pH -->
+  <div class="card">
+    <div class="card-title">◆ pH Level</div>
+    <div class="gauge-container">
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 120 70">
+          <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#1a3a6b" stroke-width="8" stroke-linecap="round"/>
+          <path d="M10,60 A50,50 0 0,1 50,14"  fill="none" stroke="#ff3c3c" stroke-width="8" stroke-linecap="round"/>
+          <path d="M50,14 A50,50 0 0,1 85,18"  fill="none" stroke="#ffa000" stroke-width="8" stroke-linecap="round"/>
+          <path d="M85,18 A50,50 0 0,1 110,60" fill="none" stroke="#00c850" stroke-width="8" stroke-linecap="round"/>
+          <line id="phNeedle" x1="60" y1="60" x2="60" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="60" cy="60" r="4" fill="white"/>
+          <text x="5"   y="70" fill="#4a9eff" font-size="8">0</text>
+          <text x="54"  y="12" fill="#4a9eff" font-size="8">7</text>
+          <text x="108" y="70" fill="#4a9eff" font-size="8">14</text>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-value" id="phValue">7.00</div>
+        <div class="gauge-unit">pH</div>
+        <div class="gauge-status status-normal" id="phStatus">NORMAL</div>
       </div>
     </div>
   </div>
 
-  <div class='card'>
-    <div class='card-title'>&#9670; Leaching VAT - Upper</div>
-    <div class='tank-container'>
-      <div class='tank-visual'>
-        <div class='tank-body'><div class='tank-water' id="tank1Water" style='height:0%'><div class='tank-wave'></div></div></div>
-        <div class='tank-pct' id="tank1Pct">0%</div>
+  <!-- Tank 1 -->
+  <div class="card">
+    <div class="card-title">◆ Leaching VAT - Upper</div>
+    <div class="tank-container">
+      <div class="tank-visual">
+        <div class="tank-body">
+          <div class="tank-water" id="tank1Water" style="height:0%"><div class="tank-wave"></div></div>
+        </div>
+        <div class="tank-pct" id="tank1Pct">0%</div>
       </div>
-      <div class='tank-scale'><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
-      <div class='tank-info'>
-        <div class='tank-name'>LEACHING VAT</div>
-        <div class='tank-row'><span>Distance</span><span id="d1">0.00 cm</span></div>
-        <div class='tank-row'><span>Level</span><span id="wl1">0.00 cm</span></div>
-        <div class='tank-row'><span>Pump</span><span id="pumpStatus">ON</span></div>
-        <div class='gauge-status status-normal' id="tank1Status">NORMAL</div>
-      </div>
-    </div>
-  </div>
-
-  <div class='card'>
-    <div class='card-title'>&#9670; Volume & Lime - Solution Tank</div>
-    <div style='padding:8px 0'>
-      <div style='font-size:36px;font-weight:900;color:#00d4ff'><span id="volValue">0.00</span><span style='font-size:14px;color:#4a9eff'> L</span></div>
-      <div style='font-size:11px;color:#4a9eff;margin-bottom:12px'>SOLUTION VOLUME</div>
-      <div style='font-size:28px;font-weight:900;color:#00ff88'><span id="limeValue">0.0</span><span style='font-size:13px;color:#4a9eff'> g</span></div>
-      <div style='font-size:11px;color:#4a9eff'>LIME REQUIRED</div>
-    </div>
-  </div>
-
-  <div class='card'>
-    <div class='card-title'>&#9670; Solution Tank - Lower</div>
-    <div class='tank-container'>
-      <div class='tank-visual'>
-        <div class='tank-body'><div class='tank-water' id="tank2Water" style='height:0%'><div class='tank-wave'></div></div></div>
-        <div class='tank-pct' id="tank2Pct">0%</div>
-      </div>
-      <div class='tank-scale'><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
-      <div class='tank-info'>
-        <div class='tank-name'>SOLUTION TANK</div>
-        <div class='tank-row'><span>Distance</span><span id="d2">0.00 cm</span></div>
-        <div class='tank-row'><span>Level</span><span id="wl2">0.00 cm</span></div>
-        <div class='tank-row'><span>Volume</span><span id="volDisplay">0.00 L</span></div>
-        <div class='gauge-status status-normal' id="tank2Status">NORMAL</div>
+      <div class="tank-scale"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
+      <div class="tank-info">
+        <div class="tank-name">LEACHING VAT</div>
+        <div class="tank-row"><span>Distance</span><span id="d1">0.00 cm</span></div>
+        <div class="tank-row"><span>Level</span><span id="wl1">0.00 cm</span></div>
+        <div class="tank-row"><span>Pump</span><span id="pumpStatusInTank">OFF</span></div>
+        <div class="gauge-status status-normal" id="tank1Status">NORMAL</div>
       </div>
     </div>
   </div>
 
-  <div class='card pump-card'>
-    <div class='pump-indicator'>
-      <div class='pump-dot on' id="pumpDot"></div>
-      <div><div class='pump-label' id="pumpLabel">PUMP RUNNING</div>
-      <div class='pump-sublabel' id="pumpSub">System operating normally</div></div>
+  <!-- Temperature -->
+  <div class="card">
+    <div class="card-title">◆ Temperature</div>
+    <div class="gauge-container">
+      <div class="gauge-info">
+        <div class="gauge-value" id="tempValue">25.0</div>
+        <div class="gauge-unit">°C</div>
+        <div class="gauge-status status-normal" id="tempStatus">NORMAL</div>
+      </div>
     </div>
-    <div style='text-align:right'>
-      <div style='font-size:11px;color:#4a9eff'>SHUTDOWN AT</div>
-      <div style='font-size:16px;font-weight:bold'>3.0 cm</div>
-      <div style='font-size:11px;color:#4a9eff;margin-top:4px'>START AT</div>
-      <div style='font-size:16px;font-weight:bold'>6.0 cm</div>
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;color:#4a9eff;margin-bottom:6px;">HEATER</div>
+      <div class="pump-indicator">
+        <div class="pump-dot off" id="heaterDot"></div>
+        <div>
+          <div class="pump-label" id="heaterLabel">HEATER OFF</div>
+          <div class="pump-sublabel">Thermal control</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class='card notif-card'>
-    <div class='card-title'>&#9670; Notifications & Alarms</div>
-    <div class='notif-list' id="notifList">
-      <div style='color:#4a9eff;font-size:12px;padding:8px'>No notifications yet...</div>
+  <!-- ORP -->
+  <div class="card">
+    <div class="card-title">◆ ORP Level</div>
+    <div class="gauge-container">
+      <div class="gauge-info">
+        <div class="gauge-value" id="orpValue">0</div>
+        <div class="gauge-unit">mV</div>
+        <div class="gauge-status status-normal" id="orpStatus">NORMAL</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;color:#4a9eff;margin-bottom:6px;">AGITATOR</div>
+      <div class="pump-indicator">
+        <div class="pump-dot off" id="agitatorDot"></div>
+        <div>
+          <div class="pump-label" id="agitatorLabel">AGITATOR OFF</div>
+          <div class="pump-sublabel">Mixing control</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
+  <!-- Volume & Lime -->
+  <div class="card">
+    <div class="card-title">◆ Volume &amp; Lime - Solution Tank</div>
+    <div style="padding:8px 0">
+      <div style="font-size:36px;font-weight:900;color:#00d4ff">
+        <span id="volValue">0.00</span><span style="font-size:14px;color:#4a9eff"> L</span>
+      </div>
+      <div style="font-size:11px;color:#4a9eff;margin-bottom:12px">SOLUTION VOLUME</div>
+      <div style="font-size:28px;font-weight:900;color:#00ff88">
+        <span id="limeValue">0.0</span><span style="font-size:13px;color:#4a9eff"> g</span>
+      </div>
+      <div style="font-size:11px;color:#4a9eff">LIME REQUIRED</div>
+    </div>
+  </div>
+
+  <!-- Tank 2 -->
+  <div class="card">
+    <div class="card-title">◆ Solution Tank - Lower</div>
+    <div class="tank-container">
+      <div class="tank-visual">
+        <div class="tank-body">
+          <div class="tank-water" id="tank2Water" style="height:0%"><div class="tank-wave"></div></div>
+        </div>
+        <div class="tank-pct" id="tank2Pct">0%</div>
+      </div>
+      <div class="tank-scale"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
+      <div class="tank-info">
+        <div class="tank-name">SOLUTION TANK</div>
+        <div class="tank-row"><span>Distance</span><span id="d2">0.00 cm</span></div>
+        <div class="tank-row"><span>Level</span><span id="wl2">0.00 cm</span></div>
+        <div class="tank-row"><span>Volume</span><span id="volDisplay">0.00 L</span></div>
+        <div class="gauge-status status-normal" id="tank2Status">NORMAL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pump status bar -->
+  <div class="card pump-card">
+    <div class="actuators-row">
+      <div class="pump-indicator">
+        <div class="pump-dot off" id="pumpDot"></div>
+        <div>
+          <div class="pump-label" id="pumpLabel">PUMP OFF</div>
+          <div class="pump-sublabel">Main circulation</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#4a9eff">SHUTDOWN AT</div>
+      <div style="font-size:16px;font-weight:bold">3.0 cm</div>
+      <div style="font-size:11px;color:#4a9eff;margin-top:4px">START AT</div>
+      <div style="font-size:16px;font-weight:bold">6.0 cm</div>
+    </div>
+  </div>
+
+  <!-- Uptime -->
+  <div class="card" style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;flex-wrap:wrap;gap:8px;">
+    <div style="font-size:11px;color:#4a9eff;letter-spacing:2px;">DEVICE UPTIME</div>
+    <div style="font-size:20px;font-weight:bold;color:#00d4ff;" id="uptimeDisplay">--:--:--</div>
+    <div style="font-size:11px;color:#4a9eff;letter-spacing:2px;">LAST UPDATE</div>
+    <div style="font-size:14px;font-weight:bold;color:#fff;" id="lastUpdate">--:--:--</div>
+    <div style="font-size:11px;color:#4a9eff;letter-spacing:2px;">BROKER</div>
+    <div style="font-size:12px;font-weight:bold;color:#00ff88;" id="brokerDisplay">broker.hivemq.com</div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card notif-card">
+    <div class="card-title">◆ Notifications &amp; Alarms</div>
+    <div class="notif-list" id="notifList">
+      <div style="color:#4a9eff;font-size:12px;padding:8px">Waiting for data...</div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
-function updateClock(){
+// ── Clock ────────────────────────────────────────────────
+function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB');
+  document.getElementById('clock').textContent   = now.toLocaleTimeString('en-GB');
   document.getElementById('datestr').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
 updateClock();
 setInterval(updateClock, 1000);
 
-function fetchData(){
-  fetch('/api')
-    .then(response => response.json())
-    .then(data => {
-      // Update pH
-      let ph = data.ph;
-      document.getElementById('phValue').innerHTML = ph.toFixed(2);
-      
-      let phStatus = document.getElementById('phStatus');
-      let phClass = 'status-normal';
-      let phText = 'NORMAL';
-      if(ph > 12 || ph < 4){ phText = 'CRITICAL'; phClass = 'status-alert'; }
-      else if(ph >= 10.5){ phText = 'HIGH'; phClass = 'status-high'; }
-      else if(ph < 6){ phText = 'LOW'; phClass = 'status-low'; }
-      phStatus.innerHTML = phText;
-      phStatus.className = 'gauge-status ' + phClass;
-      
-      // Update tank 1
-      let wl1 = data.wl1;
-      let t1pct = Math.min(100, Math.max(0, (wl1 / 15) * 100));
-      document.getElementById('tank1Water').style.height = t1pct + '%';
-      document.getElementById('tank1Pct').innerHTML = Math.round(t1pct) + '%';
-      document.getElementById('wl1').innerHTML = wl1.toFixed(2) + ' cm';
-      document.getElementById('d1').innerHTML = data.d1.toFixed(2) + ' cm';
-      
-      let t1Status = document.getElementById('tank1Status');
-      if(t1pct >= 90){ t1Status.innerHTML = 'HIGH LEVEL'; t1Status.className = 'gauge-status status-high'; }
-      else if(t1pct <= 10){ t1Status.innerHTML = 'LOW LEVEL'; t1Status.className = 'gauge-status status-low'; }
-      else { t1Status.innerHTML = 'NORMAL'; t1Status.className = 'gauge-status status-normal'; }
-      
-      // Update tank 2
-      let wl2 = data.wl2;
-      let t2pct = Math.min(100, Math.max(0, (wl2 / 9) * 100));
-      document.getElementById('tank2Water').style.height = t2pct + '%';
-      document.getElementById('tank2Pct').innerHTML = Math.round(t2pct) + '%';
-      document.getElementById('wl2').innerHTML = wl2.toFixed(2) + ' cm';
-      document.getElementById('d2').innerHTML = data.d2.toFixed(2) + ' cm';
-      document.getElementById('volDisplay').innerHTML = data.vol.toFixed(2) + ' L';
-      
-      let t2Status = document.getElementById('tank2Status');
-      if(t2pct >= 90){ t2Status.innerHTML = 'HIGH LEVEL'; t2Status.className = 'gauge-status status-high'; }
-      else if(t2pct <= 10){ t2Status.innerHTML = 'LOW LEVEL'; t2Status.className = 'gauge-status status-low'; }
-      else { t2Status.innerHTML = 'NORMAL'; t2Status.className = 'gauge-status status-normal'; }
-      
-      // Update volume & lime
-      document.getElementById('volValue').innerHTML = data.vol.toFixed(2);
-      document.getElementById('limeValue').innerHTML = data.lime.toFixed(1);
-      
-      // Update pump
-      let pump = data.pump;
-      let pumpDot = document.getElementById('pumpDot');
-      let pumpLabel = document.getElementById('pumpLabel');
-      let pumpSub = document.getElementById('pumpSub');
-      
-      if(pump == 'ON'){
-        pumpDot.className = 'pump-dot on';
-        pumpLabel.innerHTML = 'PUMP RUNNING';
-        pumpSub.innerHTML = 'System operating normally';
-      } else {
-        pumpDot.className = 'pump-dot off';
-        pumpLabel.innerHTML = 'PUMP STOPPED';
-        pumpSub.innerHTML = 'Tank full - Auto shutdown';
-      }
-      
-      document.getElementById('pumpStatus').innerHTML = pump;
-    })
-    .catch(err => console.log('Error:', err));
+// ── Helpers ───────────────────────────────────────────────
+function setDot(id, on) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'pump-dot ' + (on ? 'on' : 'off');
+}
+function setStatus(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className   = 'gauge-status ' + cls;
+}
+function addNotif(type, msg) {
+  const list = document.getElementById('notifList');
+  const now  = new Date().toLocaleTimeString('en-GB');
+  const cls  = (type === 'ALARM') ? 'alarm' : 'notify';
+  const icon = (type === 'ALARM') ? '🔴' : '🔵';
+  const item = document.createElement('div');
+  item.className = 'notif-item ' + cls;
+  item.innerHTML = `<span class="notif-icon">${icon}</span><span class="notif-time">${now}</span><span class="notif-type">${type}</span><span class="notif-msg">${msg}</span>`;
+  if (list.firstChild && list.firstChild.style && list.firstChild.style.color) list.innerHTML = '';
+  list.insertBefore(item, list.firstChild);
+  while (list.children.length > 20) list.removeChild(list.lastChild);
 }
 
-fetchData();
-setInterval(fetchData, 3000);
+// ── pH needle ────────────────────────────────────────────
+function updatePhNeedle(ph) {
+  const angle = ((ph / 14) * 180) - 90;
+  const rad   = angle * Math.PI / 180;
+  const cx = 60, cy = 60, len = 38;
+  const x2 = cx + len * Math.cos(rad);
+  const y2 = cy + len * Math.sin(rad);
+  const needle = document.getElementById('phNeedle');
+  if (needle) { needle.setAttribute('x2', x2.toFixed(1)); needle.setAttribute('y2', y2.toFixed(1)); }
+}
+
+// ── Main update ───────────────────────────────────────────
+let prevPump = '', prevHeater = '', prevAgitator = '';
+
+function updateDashboard(data) {
+  // pH
+  const ph = parseFloat(data.ph) || 0;
+  document.getElementById('phValue').textContent = ph.toFixed(2);
+  updatePhNeedle(ph);
+  if      (ph > 12 || ph < 4)  setStatus('phStatus','CRITICAL','status-alert');
+  else if (ph >= 10.5)          setStatus('phStatus','HIGH',    'status-high');
+  else if (ph < 6)              setStatus('phStatus','LOW',     'status-low');
+  else                          setStatus('phStatus','NORMAL',  'status-normal');
+
+  // Temperature
+  const temp = parseFloat(data.temp) || 0;
+  document.getElementById('tempValue').textContent = temp.toFixed(1);
+  if      (temp > 45) setStatus('tempStatus','OVERHEATING','status-alert');
+  else if (temp > 35) setStatus('tempStatus','HIGH',       'status-high');
+  else if (temp < 10) setStatus('tempStatus','LOW',        'status-low');
+  else                setStatus('tempStatus','NORMAL',     'status-normal');
+
+  // ORP
+  const orp = parseFloat(data.orp) || 0;
+  document.getElementById('orpValue').textContent = orp.toFixed(0);
+  if      (orp > 800) setStatus('orpStatus','HIGH',  'status-high');
+  else if (orp < 200) setStatus('orpStatus','LOW',   'status-low');
+  else                setStatus('orpStatus','NORMAL','status-normal');
+
+  // Tank 1
+  const wl1   = parseFloat(data.wl1) || 0;
+  const t1pct = Math.min(100, Math.max(0, (wl1 / 15) * 100));
+  document.getElementById('tank1Water').style.height = t1pct + '%';
+  document.getElementById('tank1Pct').textContent    = Math.round(t1pct) + '%';
+  document.getElementById('wl1').textContent         = wl1.toFixed(2) + ' cm';
+  document.getElementById('d1').textContent          = (parseFloat(data.d1)||0).toFixed(2) + ' cm';
+  if      (t1pct >= 90) setStatus('tank1Status','HIGH LEVEL','status-high');
+  else if (t1pct <= 10) setStatus('tank1Status','LOW LEVEL', 'status-low');
+  else                  setStatus('tank1Status','NORMAL',    'status-normal');
+
+  // Tank 2
+  const wl2   = parseFloat(data.wl2) || 0;
+  const t2pct = Math.min(100, Math.max(0, (wl2 / 9) * 100));
+  document.getElementById('tank2Water').style.height = t2pct + '%';
+  document.getElementById('tank2Pct').textContent    = Math.round(t2pct) + '%';
+  document.getElementById('wl2').textContent         = wl2.toFixed(2) + ' cm';
+  document.getElementById('d2').textContent          = (parseFloat(data.d2)||0).toFixed(2) + ' cm';
+  document.getElementById('volDisplay').textContent  = (parseFloat(data.vol)||0).toFixed(2) + ' L';
+  if      (t2pct >= 90) setStatus('tank2Status','HIGH LEVEL','status-high');
+  else if (t2pct <= 10) setStatus('tank2Status','LOW LEVEL', 'status-low');
+  else                  setStatus('tank2Status','NORMAL',    'status-normal');
+
+  // Volume & Lime
+  document.getElementById('volValue').textContent  = (parseFloat(data.vol)||0).toFixed(2);
+  document.getElementById('limeValue').textContent = (parseFloat(data.lime)||0).toFixed(1);
+
+  // Pump
+  const pump = (data.pump || 'OFF').trim();
+  document.getElementById('pumpStatusInTank').textContent = pump;
+  setDot('pumpDot', pump === 'ON');
+  document.getElementById('pumpLabel').textContent = pump === 'ON' ? 'PUMP RUNNING' : 'PUMP STOPPED';
+  if (pump !== prevPump) { addNotif('NOTIFY', 'Pump changed to ' + pump); prevPump = pump; }
+
+  // Heater
+  const heater = (data.heater || 'OFF').trim();
+  setDot('heaterDot', heater === 'ON');
+  document.getElementById('heaterLabel').textContent = 'HEATER ' + heater;
+  if (heater !== prevHeater) { addNotif('NOTIFY', 'Heater changed to ' + heater); prevHeater = heater; }
+
+  // Agitator
+  const agitator = (data.agitator || 'OFF').trim();
+  setDot('agitatorDot', agitator === 'ON');
+  document.getElementById('agitatorLabel').textContent = 'AGITATOR ' + agitator;
+  if (agitator !== prevAgitator) { addNotif('NOTIFY', 'Agitator changed to ' + agitator); prevAgitator = agitator; }
+
+  // Uptime & last update
+  if (data.uptime) document.getElementById('uptimeDisplay').textContent = data.uptime;
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-GB');
+
+  // Alarms
+  if (ph > 12 || ph < 4)  addNotif('ALARM',  'pH CRITICAL: ' + ph.toFixed(2));
+  if (temp > 45)           addNotif('ALARM',  'OVERHEATING: ' + temp.toFixed(1) + '°C');
+  if (t1pct >= 90)         addNotif('ALARM',  'Tank 1 HIGH LEVEL: ' + Math.round(t1pct) + '%');
+  if (t1pct <= 10)         addNotif('ALARM',  'Tank 1 LOW LEVEL: '  + Math.round(t1pct) + '%');
+  if (t2pct >= 90)         addNotif('ALARM',  'Tank 2 HIGH LEVEL: ' + Math.round(t2pct) + '%');
+  if (t2pct <= 10)         addNotif('ALARM',  'Tank 2 LOW LEVEL: '  + Math.round(t2pct) + '%');
+
+  // Connection indicator
+  document.getElementById('connDot').className = 'conn-dot live';
+  document.getElementById('connLabel').textContent = 'LIVE';
+}
+
+// ── MQTT via WebSocket ────────────────────────────────────
+const TOPIC = 'vatleaching/device1/data';
+const BROKER = 'wss://broker.hivemq.com:8884/mqtt';
+
+document.getElementById('brokerDisplay').textContent = 'broker.hivemq.com';
+
+const mqttClient = mqtt.connect(BROKER, {
+  clientId: 'dashboard_' + Math.random().toString(16).substr(2,8),
+  clean: true,
+  reconnectPeriod: 3000,
+  connectTimeout: 10000
+});
+
+mqttClient.on('connect', () => {
+  console.log('[MQTT] Connected via WebSocket');
+  mqttClient.subscribe(TOPIC, (err) => {
+    if (!err) console.log('[MQTT] Subscribed to ' + TOPIC);
+  });
+  document.getElementById('connDot').className   = 'conn-dot';
+  document.getElementById('connLabel').textContent = 'CONNECTED';
+});
+
+mqttClient.on('message', (topic, message) => {
+  try {
+    const data = JSON.parse(message.toString());
+    updateDashboard(data);
+  } catch(e) {
+    console.error('[MQTT] Parse error:', e);
+  }
+});
+
+mqttClient.on('reconnect', () => {
+  document.getElementById('connDot').className   = 'conn-dot';
+  document.getElementById('connLabel').textContent = 'RECONNECTING...';
+});
+
+mqttClient.on('offline', () => {
+  document.getElementById('connDot').className   = 'conn-dot';
+  document.getElementById('connLabel').textContent = 'OFFLINE';
+});
+
+mqttClient.on('error', (err) => {
+  console.error('[MQTT] Error:', err);
+  document.getElementById('connLabel').textContent = 'ERROR';
+});
 </script>
 </body>
 </html>
