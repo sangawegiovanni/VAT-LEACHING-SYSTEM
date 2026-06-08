@@ -357,7 +357,7 @@ header::after{
     </div>
     <div class="footer-item">
       <div class="footer-label">BROKER</div>
-      <div class="footer-val small">HiveMQ Cloud ✓</div>
+      <div class="footer-val small">HiveMQ Public ✓</div>
     </div>
     <div class="footer-item">
       <div class="footer-label">TOPIC</div>
@@ -380,12 +380,10 @@ header::after{
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <script>
 // ============================================================
-//  CONFIG
+//  PUBLIC HIVEMQ BROKER — NO AUTHENTICATION
 // ============================================================
-const BROKER    = 'wss://92a3e49303d34dd29c1916a2d53ffc13.s1.eu.hivemq.cloud:8884/mqtt';
-const TOPIC     = 'vatleaching/device1/data';
-const MQTT_USER = 'giovanni';
-const MQTT_PASS = 'Mchili123#';
+const BROKER = 'wss://broker.hivemq.com:8884/mqtt';
+const TOPIC  = 'vatleaching/device1/data';
 
 // ============================================================
 //  CLOCK
@@ -504,7 +502,7 @@ function updateDashboard(data) {
 }
 
 // ============================================================
-//  MQTT  — unique clientId per tab = multiple viewers work
+//  MQTT — PUBLIC BROKER (NO AUTH) + UNIQUE CLIENT ID
 // ============================================================
 window.addEventListener('load', () => {
   if (typeof mqtt === 'undefined') {
@@ -512,29 +510,21 @@ window.addEventListener('load', () => {
     return;
   }
 
-  // Each tab/browser gets a unique client ID — this is what
-  // fixes multiple simultaneous viewers. HiveMQ Cloud rejects
-  // duplicate client IDs, kicking the previous connection.
-  // Using random + timestamp guarantees uniqueness.
-  const clientId = 'vat_viewer_'
-    + Math.random().toString(36).substr(2, 6)
-    + '_' + Date.now().toString(36);
+  // Unique client ID for each viewer – prevents conflicts
+  const clientId = 'vat_viewer_' + Math.random().toString(36).substr(2, 8) + '_' + Date.now();
 
   const client = mqtt.connect(BROKER, {
     clientId:        clientId,
-    username:        MQTT_USER,
-    password:        MQTT_PASS,
-    clean:           true,       // no persistent session — subscribe-only viewers
+    clean:           true,
     reconnectPeriod: 4000,
     connectTimeout:  15000,
-    keepalive:       60,
-    protocolVersion: 4           // MQTT 3.1.1 — stable with HiveMQ Cloud
+    keepalive:       60
   });
 
   client.on('connect', () => {
-    console.log('[MQTT] Connected as', clientId);
+    console.log('[MQTT] Connected to public broker as', clientId);
     document.getElementById('connDot').className    = 'dot connecting';
-    document.getElementById('connLabel').textContent = 'SYNCING';
+    document.getElementById('connLabel').textContent = 'CONNECTED';
     client.subscribe(TOPIC, { qos: 0 }, (err) => {
       if (!err) {
         document.getElementById('connLabel').textContent = 'SUBSCRIBED';
@@ -550,7 +540,7 @@ window.addEventListener('load', () => {
       const data = JSON.parse(message.toString());
       updateDashboard(data);
     } catch(e) {
-      console.error('[MQTT] Parse error:', e, message.toString());
+      console.error('[MQTT] Parse error:', e);
     }
   });
 
@@ -568,11 +558,6 @@ window.addEventListener('load', () => {
     console.error('[MQTT] Error:', err.message);
     document.getElementById('connDot').className    = 'dot';
     document.getElementById('connLabel').textContent = 'ERROR';
-  });
-
-  client.on('close', () => {
-    document.getElementById('connDot').className    = 'dot';
-    document.getElementById('connLabel').textContent = 'CLOSED';
   });
 });
 </script>
