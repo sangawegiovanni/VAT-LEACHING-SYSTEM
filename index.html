@@ -3,278 +3,375 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VAT Leaching System - Monitor</title>
+<title>VAT Leaching System — Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#050d1a;color:#fff;font-family:'Segoe UI',sans-serif;min-height:100vh;}
+*{margin:0;padding:0;box-sizing:border-box;}
 
-  .header{
-    background:linear-gradient(135deg,#0a1628,#0d2040);
-    border-bottom:2px solid #00d4ff;
-    padding:12px 20px;
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
-  }
-  .header-logo{display:flex;align-items:center;gap:12px;}
-  .logo-icon{
-    width:42px;height:42px;
-    background:linear-gradient(135deg,#00d4ff,#0066ff);
-    border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;
-  }
-  .logo-text h1{
-    font-size:22px;font-weight:800;
-    background:linear-gradient(90deg,#00d4ff,#fff);
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;
-  }
-  .logo-text p{font-size:10px;color:#4a9eff;letter-spacing:2px;}
-  .header-right{text-align:right;}
-  .conn-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;justify-content:flex-end;}
-  .conn-dot{width:10px;height:10px;border-radius:50%;background:#ff3c3c;transition:all 0.3s;}
-  .conn-dot.live{background:#00c850;box-shadow:0 0 8px #00c850;}
-  .conn-dot.connecting{background:#ffa000;box-shadow:0 0 8px #ffa000;animation:blink 1s ease-in-out infinite;}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
-  .conn-label{font-size:10px;color:#4a9eff;letter-spacing:2px;}
-  .header-time{font-size:20px;font-weight:bold;color:#00d4ff;}
-  .header-date{font-size:11px;color:#4a9eff;}
+:root{
+  --bg:        #03080f;
+  --bg2:       #060e1c;
+  --bg3:       #0a1628;
+  --border:    #0d2a50;
+  --accent:    #00d4ff;
+  --accent2:   #0066ff;
+  --green:     #00e87a;
+  --yellow:    #ffb300;
+  --red:       #ff2d55;
+  --text:      #cce8ff;
+  --muted:     #3a6a99;
+  --font-hd:   'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
 
-  .main{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-hd);
+  min-height:100vh;
+  overflow-x:hidden;
+}
 
-  .card{
-    background:linear-gradient(145deg,#0a1628,#0d2040);
-    border:1px solid #1a3a6b;border-radius:16px;
-    padding:16px;position:relative;overflow:hidden;
-  }
-  .card::before{
-    content:'';position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg,transparent,#00d4ff,transparent);
-  }
-  .card-title{font-size:11px;letter-spacing:2px;color:#4a9eff;margin-bottom:12px;text-transform:uppercase;}
+/* scanline overlay */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
+  pointer-events:none;z-index:9999;
+}
 
-  .gauge-container{display:flex;align-items:center;gap:16px;}
-  .gauge-wrap{position:relative;width:120px;height:70px;}
-  .gauge-wrap svg{width:100%;height:auto;}
-  .gauge-info{flex:1;}
-  .gauge-value{font-size:32px;font-weight:900;color:#fff;line-height:1;}
-  .gauge-unit{font-size:13px;color:#4a9eff;margin-top:2px;}
-  .gauge-status{
-    display:inline-block;margin-top:8px;padding:3px 10px;
-    border-radius:20px;font-size:10px;font-weight:bold;letter-spacing:1px;
-  }
-  .status-normal{background:rgba(0,200,80,0.2);color:#00c850;border:1px solid #00c850;}
-  .status-high{background:rgba(255,160,0,0.2);color:#ffa000;border:1px solid #ffa000;}
-  .status-low{background:rgba(255,60,60,0.2);color:#ff3c3c;border:1px solid #ff3c3c;}
-  .status-alert{background:rgba(255,0,0,0.3);color:#ff0000;border:1px solid #ff0000;}
+/* ===== HEADER ===== */
+header{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  padding:12px 24px;
+  background:linear-gradient(90deg,#060e1c,#03080f);
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+header::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-hex{
+  width:46px;height:46px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.logo-title{font-size:20px;font-weight:700;letter-spacing:4px;color:#fff;line-height:1.1;}
+.logo-sub{font-size:9px;letter-spacing:3px;color:var(--muted);font-family:var(--font-mono);}
 
-  .tank-container{display:flex;align-items:flex-start;gap:16px;}
-  .tank-visual{display:flex;flex-direction:column;align-items:center;gap:4px;}
-  .tank-body{
-    width:60px;height:100px;border:3px solid #2a4a8a;
-    border-radius:8px 8px 12px 12px;position:relative;overflow:hidden;background:#050d1a;
-  }
-  .tank-water{
-    position:absolute;bottom:0;left:0;right:0;
-    background:linear-gradient(180deg,#00aaff88,#0066ff);
-    transition:height 0.5s ease;border-radius:0 0 9px 9px;
-  }
-  .tank-wave{
-    position:absolute;top:-8px;left:-10px;right:-10px;height:16px;
-    background:rgba(255,255,255,0.2);border-radius:50%;
-    animation:wave 2s ease-in-out infinite;
-  }
-  @keyframes wave{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
-  .tank-pct{font-size:22px;font-weight:900;color:#00d4ff;}
-  .tank-scale{
-    display:flex;flex-direction:column;justify-content:space-between;
-    height:100px;font-size:9px;color:#4a9eff;text-align:right;
-  }
-  .tank-info{flex:1;}
-  .tank-name{font-size:13px;font-weight:bold;color:#fff;margin-bottom:8px;}
-  .tank-row{
-    display:flex;justify-content:space-between;font-size:11px;
-    margin-bottom:4px;padding:3px 0;border-bottom:1px solid #1a3a6b;color:#8ab4d4;
-  }
-  .tank-row span:last-child{color:#fff;font-weight:bold;}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.conn-badge{
+  display:flex;align-items:center;gap:7px;
+  padding:4px 12px;border-radius:20px;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,0.4);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:2px;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red);}
+.dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse-dot 2s ease-in-out infinite;}
+.dot.connecting{background:var(--yellow);animation:blink 0.8s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 4px var(--green)}50%{box-shadow:0 0 14px var(--green)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hdr-clock{font-family:var(--font-mono);font-size:22px;color:var(--accent);letter-spacing:2px;}
+.hdr-date{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
 
-  .pump-card{
-    grid-column:1/-1;display:flex;align-items:center;
-    justify-content:space-between;padding:14px 20px;flex-wrap:wrap;gap:12px;
-  }
-  .pump-indicator{display:flex;align-items:center;gap:12px;}
-  .pump-dot{width:18px;height:18px;border-radius:50%;}
-  .pump-dot.on{background:#00c850;box-shadow:0 0 12px #00c850;animation:pulse 1.5s ease-in-out infinite;}
-  .pump-dot.off{background:#ff3c3c;box-shadow:0 0 12px #ff3c3c;}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.2)}}
-  .pump-label{font-size:16px;font-weight:bold;}
-  .pump-sublabel{font-size:10px;color:#4a9eff;}
+/* ===== GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  padding:16px 20px;
+}
 
-  .notif-card{grid-column:1/-1;max-height:220px;overflow-y:auto;}
-  .notif-list{display:flex;flex-direction:column;gap:6px;}
-  .notif-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:12px;}
-  .notif-item.alarm{background:rgba(255,0,0,0.1);border-left:3px solid #ff3c3c;}
-  .notif-item.notify{background:rgba(0,160,255,0.1);border-left:3px solid #00a0ff;}
-  .notif-time{color:#4a9eff;font-size:10px;min-width:60px;}
-  .notif-type{font-weight:bold;min-width:70px;font-size:10px;letter-spacing:1px;}
-  .notif-msg{flex:1;color:#cce4ff;}
+/* ===== CARD ===== */
+.card{
+  background:linear-gradient(145deg,var(--bg2),var(--bg3));
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.5;
+}
+.card-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:3px;
+  color:var(--muted);margin-bottom:12px;text-transform:uppercase;
+}
 
-  ::-webkit-scrollbar{width:4px;}
-  ::-webkit-scrollbar-track{background:#0a1628;}
-  ::-webkit-scrollbar-thumb{background:#1a3a6b;border-radius:2px;}
+/* ===== BIG VALUE ===== */
+.big-val{font-size:48px;font-weight:700;line-height:1;color:#fff;}
+.big-unit{font-size:14px;color:var(--muted);margin-top:2px;}
+.badge{
+  display:inline-block;margin-top:8px;
+  padding:3px 12px;border-radius:20px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:1px;
+}
+.badge-ok   {background:rgba(0,232,122,0.15);color:var(--green);border:1px solid var(--green);}
+.badge-warn {background:rgba(255,179,0,0.15);color:var(--yellow);border:1px solid var(--yellow);}
+.badge-crit {background:rgba(255,45,85,0.2);color:var(--red);border:1px solid var(--red);}
+.badge-wait {background:rgba(58,106,153,0.2);color:var(--muted);border:1px solid var(--muted);}
 
-  @media(max-width:600px){.main{grid-template-columns:1fr;}}
+/* ===== TANK ===== */
+.tank-wrap{display:flex;gap:16px;align-items:flex-start;}
+.tank-col{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.tank-body{
+  width:52px;height:110px;
+  border:2px solid #1a3a6b;
+  border-radius:6px 6px 10px 10px;
+  position:relative;overflow:hidden;
+  background:#020810;
+}
+.tank-fill{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg,rgba(0,170,255,0.6),rgba(0,90,220,0.9));
+  transition:height 0.6s cubic-bezier(0.4,0,0.2,1);
+  border-radius:0 0 8px 8px;
+}
+.tank-fill::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:rgba(255,255,255,0.25);border-radius:2px;
+  animation:wave 2s ease-in-out infinite;
+}
+@keyframes wave{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.85)}}
+.tank-pct{font-family:var(--font-mono);font-size:18px;color:var(--accent);}
+.tank-scale{
+  display:flex;flex-direction:column;justify-content:space-between;
+  height:110px;font-family:var(--font-mono);font-size:8px;color:var(--muted);
+  text-align:right;padding:2px 0;
+}
+.tank-data{flex:1;}
+.tank-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:10px;letter-spacing:1px;}
+.tank-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:11px;
+  padding:5px 0;border-bottom:1px solid rgba(13,42,80,0.8);
+  color:var(--muted);
+}
+.tank-row span:last-child{color:#fff;font-weight:600;}
+
+/* ===== PUMP ===== */
+.pump-card{grid-column:1/-1;}
+.pump-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.pump-left{display:flex;align-items:center;gap:16px;}
+.pump-ring{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid var(--red);
+  background:rgba(255,45,85,0.1);
+  transition:all 0.4s ease;
+}
+.pump-ring.on{
+  border-color:var(--green);
+  background:rgba(0,232,122,0.1);
+  box-shadow:0 0 20px rgba(0,232,122,0.3);
+  animation:pump-pulse 1.5s ease-in-out infinite;
+}
+@keyframes pump-pulse{0%,100%{box-shadow:0 0 10px rgba(0,232,122,0.2)}50%{box-shadow:0 0 30px rgba(0,232,122,0.5)}}
+.pump-icon{font-size:24px;}
+.pump-status{font-size:22px;font-weight:700;letter-spacing:2px;}
+.pump-sub{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px;}
+.pump-thresholds{display:flex;gap:24px;}
+.thresh-item{text-align:center;}
+.thresh-val{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--accent);}
+.thresh-lbl{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:2px;}
+
+/* ===== VOL/LIME ===== */
+.vl-row{display:flex;gap:20px;}
+.vl-item{flex:1;}
+.vl-val{font-size:36px;font-weight:700;color:#fff;line-height:1;}
+.vl-unit{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:2px;}
+.vl-label{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:6px;}
+.divider{width:1px;background:var(--border);}
+
+/* ===== NOTIF ===== */
+.notif-card{grid-column:1/-1;}
+.notif-scroll{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding-right:4px;}
+.notif-scroll::-webkit-scrollbar{width:3px;}
+.notif-scroll::-webkit-scrollbar-track{background:transparent;}
+.notif-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.notif-item{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 12px;border-radius:6px;
+  font-family:var(--font-mono);font-size:11px;
+}
+.notif-item.alarm{background:rgba(255,45,85,0.08);border-left:2px solid var(--red);}
+.notif-item.notify{background:rgba(0,102,255,0.08);border-left:2px solid var(--accent2);}
+.notif-time{color:var(--muted);min-width:65px;font-size:10px;}
+.notif-type{min-width:60px;font-weight:600;font-size:10px;letter-spacing:1px;}
+.notif-type.alarm{color:var(--red);}
+.notif-type.notify{color:var(--accent);}
+.notif-msg{color:var(--text);flex:1;}
+
+/* ===== FOOTER BAR ===== */
+.footer-card{
+  grid-column:1/-1;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;padding:12px 20px;
+}
+.footer-item{}
+.footer-label{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+.footer-val{font-family:var(--font-mono);font-size:16px;color:var(--accent);}
+.footer-val.small{font-size:12px;color:var(--green);}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:580px){
+  .grid{grid-template-columns:1fr;}
+  .pump-card,.notif-card,.footer-card{grid-column:1;}
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-logo">
-    <div class="logo-icon">⚗️</div>
-    <div class="logo-text">
-      <h1>VAT LEACHING SYSTEM</h1>
-      <p>METALLURGICAL MONITORING SYSTEM</p>
+<header>
+  <div class="logo">
+    <div class="logo-hex">⚗️</div>
+    <div>
+      <div class="logo-title">VAT LEACHING</div>
+      <div class="logo-sub">METALLURGICAL MONITORING SYSTEM</div>
     </div>
   </div>
-  <div class="header-right">
-    <div class="conn-row">
-      <div class="conn-dot connecting" id="connDot"></div>
-      <span class="conn-label" id="connLabel">CONNECTING...</span>
+  <div class="hdr-right">
+    <div class="conn-badge">
+      <div class="dot connecting" id="connDot"></div>
+      <span id="connLabel">CONNECTING</span>
     </div>
-    <div class="header-time" id="clock">--:--:--</div>
-    <div class="header-date" id="datestr">Loading...</div>
+    <div class="hdr-clock" id="clock">--:--:--</div>
+    <div class="hdr-date" id="dateStr">--</div>
   </div>
-</div>
+</header>
 
-<div class="main">
+<div class="grid">
 
+  <!-- pH -->
   <div class="card">
-    <div class="card-title">◆ pH Level</div>
-    <div class="gauge-container">
-      <div class="gauge-wrap">
-        <svg viewBox="0 0 120 70">
-          <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#1a3a6b" stroke-width="8" stroke-linecap="round"/>
-          <path d="M10,60 A50,50 0 0,1 50,14"  fill="none" stroke="#ff3c3c" stroke-width="8" stroke-linecap="round"/>
-          <path d="M50,14 A50,50 0 0,1 85,18"  fill="none" stroke="#ffa000" stroke-width="8" stroke-linecap="round"/>
-          <path d="M85,18 A50,50 0 0,1 110,60" fill="none" stroke="#00c850" stroke-width="8" stroke-linecap="round"/>
-          <line id="phNeedle" x1="60" y1="60" x2="60" y2="22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="60" cy="60" r="4" fill="white"/>
-          <text x="5" y="70" fill="#4a9eff" font-size="8">0</text>
-          <text x="54" y="12" fill="#4a9eff" font-size="8">7</text>
-          <text x="108" y="70" fill="#4a9eff" font-size="8">14</text>
-        </svg>
-      </div>
-      <div class="gauge-info">
-        <div class="gauge-value" id="phValue">--</div>
-        <div class="gauge-unit">pH</div>
-        <div class="gauge-status status-normal" id="phStatus">WAITING</div>
-      </div>
-    </div>
+    <div class="card-label">// pH Level</div>
+    <div class="big-val" id="phVal">--</div>
+    <div class="big-unit">pH units</div>
+    <div class="badge badge-wait" id="phBadge">WAITING</div>
   </div>
 
+  <!-- Upper Tank -->
   <div class="card">
-    <div class="card-title">◆ Leaching VAT - Upper</div>
-    <div class="tank-container">
-      <div class="tank-visual">
-        <div class="tank-body"><div class="tank-water" id="tank1Water" style="height:0%"><div class="tank-wave"></div></div></div>
-        <div class="tank-pct" id="tank1Pct">0%</div>
+    <div class="card-label">// Leaching VAT — Upper</div>
+    <div class="tank-wrap">
+      <div class="tank-col">
+        <div class="tank-body"><div class="tank-fill" id="t1fill" style="height:0%"></div></div>
+        <div class="tank-pct" id="t1pct">0%</div>
       </div>
-      <div class="tank-scale"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
-      <div class="tank-info">
+      <div class="tank-scale"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+      <div class="tank-data">
         <div class="tank-name">LEACHING VAT</div>
-        <div class="tank-row"><span>Distance</span><span id="d1">-- cm</span></div>
-        <div class="tank-row"><span>Level</span><span id="wl1">-- cm</span></div>
-        <div class="tank-row"><span>Pump</span><span id="pumpStatusInTank">--</span></div>
-        <div class="gauge-status status-normal" id="tank1Status">WAITING</div>
+        <div class="tank-row"><span>Sensor dist</span><span id="d1Val">-- cm</span></div>
+        <div class="tank-row"><span>Water level</span><span id="wl1Val">-- cm</span></div>
+        <div class="tank-row"><span>Pump</span><span id="pumpInTank">--</span></div>
+        <div class="badge badge-wait" id="t1badge" style="margin-top:8px">WAITING</div>
       </div>
     </div>
   </div>
 
+  <!-- Solution Tank Lower -->
   <div class="card">
-    <div class="card-title">◆ Temperature</div>
-    <div class="gauge-container">
-      <div class="gauge-info">
-        <div class="gauge-value" id="tempValue">--</div>
-        <div class="gauge-unit">°C</div>
-        <div class="gauge-status status-normal" id="tempStatus">WAITING</div>
+    <div class="card-label">// Solution Tank — Lower</div>
+    <div class="tank-wrap">
+      <div class="tank-col">
+        <div class="tank-body"><div class="tank-fill" id="t2fill" style="height:0%"></div></div>
+        <div class="tank-pct" id="t2pct">0%</div>
       </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">◆ ORP Level</div>
-    <div class="gauge-container">
-      <div class="gauge-info">
-        <div class="gauge-value" id="orpValue">--</div>
-        <div class="gauge-unit">mV</div>
-        <div class="gauge-status status-normal" id="orpStatus">WAITING</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">◆ Volume &amp; Lime - Solution Tank</div>
-    <div style="padding:8px 0">
-      <div style="font-size:36px;font-weight:900;color:#00d4ff">
-        <span id="volValue">--</span><span style="font-size:14px;color:#4a9eff"> L</span>
-      </div>
-      <div style="font-size:11px;color:#4a9eff;margin-bottom:12px">SOLUTION VOLUME</div>
-      <div style="font-size:28px;font-weight:900;color:#00ff88">
-        <span id="limeValue">--</span><span style="font-size:13px;color:#4a9eff"> g</span>
-      </div>
-      <div style="font-size:11px;color:#4a9eff">LIME REQUIRED</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">◆ Solution Tank - Lower</div>
-    <div class="tank-container">
-      <div class="tank-visual">
-        <div class="tank-body"><div class="tank-water" id="tank2Water" style="height:0%"><div class="tank-wave"></div></div></div>
-        <div class="tank-pct" id="tank2Pct">0%</div>
-      </div>
-      <div class="tank-scale"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
-      <div class="tank-info">
+      <div class="tank-scale"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+      <div class="tank-data">
         <div class="tank-name">SOLUTION TANK</div>
-        <div class="tank-row"><span>Distance</span><span id="d2">-- cm</span></div>
-        <div class="tank-row"><span>Level</span><span id="wl2">-- cm</span></div>
-        <div class="tank-row"><span>Volume</span><span id="volDisplay">-- L</span></div>
-        <div class="gauge-status status-normal" id="tank2Status">WAITING</div>
+        <div class="tank-row"><span>Sensor dist</span><span id="d2Val">-- cm</span></div>
+        <div class="tank-row"><span>Water level</span><span id="wl2Val">-- cm</span></div>
+        <div class="tank-row"><span>Volume</span><span id="volInTank">-- L</span></div>
+        <div class="badge badge-wait" id="t2badge" style="margin-top:8px">WAITING</div>
       </div>
     </div>
   </div>
 
+  <!-- Volume & Lime -->
+  <div class="card">
+    <div class="card-label">// Volume &amp; Lime Dosage</div>
+    <div class="vl-row">
+      <div class="vl-item">
+        <div class="vl-val" id="volVal">--</div>
+        <div class="vl-unit">Litres</div>
+        <div class="vl-label">SOLUTION VOL</div>
+      </div>
+      <div class="divider"></div>
+      <div class="vl-item">
+        <div class="vl-val" id="limeVal" style="color:var(--green)">--</div>
+        <div class="vl-unit">Grams</div>
+        <div class="vl-label">LIME REQUIRED</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pump -->
   <div class="card pump-card">
-    <div class="pump-indicator">
-      <div class="pump-dot off" id="pumpDot"></div>
-      <div>
-        <div class="pump-label" id="pumpLabel">PUMP OFF</div>
-        <div class="pump-sublabel">Main circulation pump</div>
+    <div class="card-label">// Pump Control Status</div>
+    <div class="pump-inner">
+      <div class="pump-left">
+        <div class="pump-ring" id="pumpRing">
+          <div class="pump-icon">⚙️</div>
+        </div>
+        <div>
+          <div class="pump-status" id="pumpStatus">PUMP OFF</div>
+          <div class="pump-sub">Main circulation pump</div>
+        </div>
+      </div>
+      <div class="pump-thresholds">
+        <div class="thresh-item">
+          <div class="thresh-val">3.0 cm</div>
+          <div class="thresh-lbl">SHUTDOWN</div>
+        </div>
+        <div class="thresh-item">
+          <div class="thresh-val">6.0 cm</div>
+          <div class="thresh-lbl">START</div>
+        </div>
       </div>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:11px;color:#4a9eff">SHUTDOWN AT</div>
-      <div style="font-size:16px;font-weight:bold">3.0 cm</div>
-      <div style="font-size:11px;color:#4a9eff;margin-top:4px">START AT</div>
-      <div style="font-size:16px;font-weight:bold">6.0 cm</div>
+  </div>
+
+  <!-- Footer bar -->
+  <div class="card footer-card">
+    <div class="footer-item">
+      <div class="footer-label">DEVICE UPTIME</div>
+      <div class="footer-val" id="uptimeVal">--:--:--</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">LAST UPDATE</div>
+      <div class="footer-val" id="lastUpdate">--:--:--</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">VIEWERS</div>
+      <div class="footer-val" id="viewerCount">1</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">BROKER</div>
+      <div class="footer-val small">HiveMQ Cloud ✓</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">TOPIC</div>
+      <div class="footer-val small">vatleaching/device1/data</div>
     </div>
   </div>
 
-  <div class="card" style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;flex-wrap:wrap;gap:12px;">
-    <div>
-      <div style="font-size:11px;color:#4a9eff;letter-spacing:2px">DEVICE UPTIME</div>
-      <div style="font-size:20px;font-weight:bold;color:#00d4ff" id="uptimeDisplay">--:--:--</div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:#4a9eff;letter-spacing:2px">LAST UPDATE</div>
-      <div style="font-size:14px;font-weight:bold;color:#fff" id="lastUpdate">--:--:--</div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:#4a9eff;letter-spacing:2px">BROKER</div>
-      <div style="font-size:11px;font-weight:bold;color:#00ff88">HiveMQ Cloud ✓</div>
-    </div>
-  </div>
-
+  <!-- Notifications -->
   <div class="card notif-card">
-    <div class="card-title">◆ Notifications &amp; Alarms</div>
-    <div class="notif-list" id="notifList">
-      <div style="color:#4a9eff;font-size:12px;padding:8px">Waiting for MQTT data...</div>
+    <div class="card-label">// Notifications &amp; Alarms</div>
+    <div class="notif-scroll" id="notifList">
+      <div style="color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:8px 0">
+        Waiting for MQTT data...
+      </div>
     </div>
   </div>
 
@@ -282,163 +379,200 @@
 
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <script>
-// ===== HIVEMQ CLOUD - READ-ONLY CREDENTIAL =====
-// IMPORTANT: This credential has SUBSCRIBE-ONLY permission on topic: vatleaching/device1/data
-// Even if exposed, it cannot publish or affect your devices
-const BROKER = 'wss://92a3e49303d34dd29c1916a2d53ffc13.s1.eu.hivemq.cloud:8884/mqtt';
-const TOPIC  = 'vatleaching/device1/data';
-const MQTT_USER = 'vat_dashboard_reader';
+// ============================================================
+//  CONFIG
+// ============================================================
+const BROKER    = 'wss://92a3e49303d34dd29c1916a2d53ffc13.s1.eu.hivemq.cloud:8884/mqtt';
+const TOPIC     = 'vatleaching/device1/data';
+const MQTT_USER = 'giovanni';
 const MQTT_PASS = 'Mchili123#';
 
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent   = now.toLocaleTimeString('en-GB');
-  document.getElementById('datestr').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+// ============================================================
+//  CLOCK
+// ============================================================
+function tickClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent   = n.toLocaleTimeString('en-GB');
+  document.getElementById('dateStr').textContent = n.toLocaleDateString('en-GB',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 }
-updateClock();
-setInterval(updateClock, 1000);
+tickClock();
+setInterval(tickClock, 1000);
 
-function setStatus(id, text, cls) {
+// ============================================================
+//  BADGE HELPER
+// ============================================================
+function setBadge(id, text, cls) {
   const el = document.getElementById(id);
-  if (el) { el.textContent = text; el.className = 'gauge-status ' + cls; }
+  if (!el) return;
+  el.textContent  = text;
+  el.className    = 'badge ' + cls;
 }
 
+// ============================================================
+//  NOTIFICATIONS
+// ============================================================
+const MAX_NOTIF = 30;
 function addNotif(type, msg) {
   const list = document.getElementById('notifList');
-  if (list.firstElementChild && !list.firstElementChild.classList.contains('notif-item')) list.innerHTML = '';
-  const now  = new Date().toLocaleTimeString('en-GB');
-  const cls  = type === 'ALARM' ? 'alarm' : 'notify';
-  const icon = type === 'ALARM' ? '🔴' : '🔵';
+  // remove placeholder
+  if (list.firstElementChild && !list.firstElementChild.classList.contains('notif-item'))
+    list.innerHTML = '';
+
+  const time = new Date().toLocaleTimeString('en-GB');
+  const cls  = (type === 'ALARM') ? 'alarm' : 'notify';
   const item = document.createElement('div');
   item.className = 'notif-item ' + cls;
-  item.innerHTML = `<span>${icon}</span><span class="notif-time">${now}</span><span class="notif-type">${type}</span><span class="notif-msg">${msg}</span>`;
+  item.innerHTML =
+    `<span class="notif-time">${time}</span>` +
+    `<span class="notif-type ${cls}">${type}</span>` +
+    `<span class="notif-msg">${msg}</span>`;
   list.insertBefore(item, list.firstChild);
-  while (list.children.length > 20) list.removeChild(list.lastChild);
+  while (list.children.length > MAX_NOTIF) list.removeChild(list.lastChild);
 }
 
-function updatePhNeedle(ph) {
-  const angle = ((ph / 14) * 180) - 90;
-  const rad = angle * Math.PI / 180;
-  const x2 = 60 + 36 * Math.cos(rad);
-  const y2 = 60 + 36 * Math.sin(rad);
-  const n = document.getElementById('phNeedle');
-  if (n) { n.setAttribute('x2', x2.toFixed(1)); n.setAttribute('y2', y2.toFixed(1)); }
-}
-
+// ============================================================
+//  DASHBOARD UPDATE
+// ============================================================
 let prevPump = null;
 
 function updateDashboard(data) {
+
+  // --- pH ---
   const ph = parseFloat(data.ph) || 0;
-  document.getElementById('phValue').textContent = ph.toFixed(2);
-  updatePhNeedle(ph);
-  if      (ph > 12 || ph < 4)  { setStatus('phStatus','CRITICAL','status-alert');  addNotif('ALARM','pH CRITICAL: '+ph.toFixed(2)); }
-  else if (ph >= 10.5)            setStatus('phStatus','HIGH',    'status-high');
-  else if (ph < 6)                setStatus('phStatus','LOW',     'status-low');
-  else                            setStatus('phStatus','NORMAL',  'status-normal');
+  document.getElementById('phVal').textContent = ph.toFixed(2);
+  if      (ph > 12 || ph < 4)  { setBadge('phBadge','CRITICAL','badge-crit'); addNotif('ALARM','pH CRITICAL: '+ph.toFixed(2)); }
+  else if (ph >= 10.5)            setBadge('phBadge','HIGH',    'badge-warn');
+  else if (ph < 6.5)              setBadge('phBadge','LOW',     'badge-warn');
+  else                            setBadge('phBadge','NORMAL',  'badge-ok');
 
-  const temp = parseFloat(data.temp) || 0;
-  document.getElementById('tempValue').textContent = temp.toFixed(1);
-  if      (temp > 45) { setStatus('tempStatus','OVERHEATING','status-alert'); addNotif('ALARM','OVERHEAT: '+temp.toFixed(1)+'°C'); }
-  else if (temp > 35)   setStatus('tempStatus','HIGH',       'status-high');
-  else if (temp < 10)   setStatus('tempStatus','LOW',        'status-low');
-  else                  setStatus('tempStatus','NORMAL',     'status-normal');
-
-  const orp = parseFloat(data.orp) || 0;
-  document.getElementById('orpValue').textContent = orp.toFixed(0);
-  if      (orp > 800) setStatus('orpStatus','HIGH',  'status-high');
-  else if (orp < 200) setStatus('orpStatus','LOW',   'status-low');
-  else                setStatus('orpStatus','NORMAL','status-normal');
-
+  // --- Upper tank (height = 15cm) ---
   const wl1   = parseFloat(data.wl1) || 0;
-  const t1pct = Math.min(100, Math.max(0, (wl1/15)*100));
-  document.getElementById('tank1Water').style.height = t1pct+'%';
-  document.getElementById('tank1Pct').textContent    = Math.round(t1pct)+'%';
-  document.getElementById('wl1').textContent         = wl1.toFixed(2)+' cm';
-  document.getElementById('d1').textContent          = (parseFloat(data.d1)||0).toFixed(2)+' cm';
-  if      (t1pct >= 90) { setStatus('tank1Status','HIGH LEVEL','status-high'); addNotif('ALARM','Tank 1 HIGH: '+Math.round(t1pct)+'%'); }
-  else if (t1pct <= 10) { setStatus('tank1Status','LOW LEVEL', 'status-low');  addNotif('ALARM','Tank 1 LOW: '+Math.round(t1pct)+'%');  }
-  else                    setStatus('tank1Status','NORMAL',    'status-normal');
+  const d1    = parseFloat(data.d1)  || 0;
+  const t1pct = Math.min(100, Math.max(0, (wl1 / 15) * 100));
+  document.getElementById('t1fill').style.height  = t1pct + '%';
+  document.getElementById('t1pct').textContent    = Math.round(t1pct) + '%';
+  document.getElementById('wl1Val').textContent   = wl1.toFixed(2) + ' cm';
+  document.getElementById('d1Val').textContent    = d1.toFixed(2)  + ' cm';
+  if      (t1pct >= 90) { setBadge('t1badge','HIGH LEVEL','badge-warn'); }
+  else if (t1pct <= 10) { setBadge('t1badge','LOW LEVEL', 'badge-warn'); }
+  else                    setBadge('t1badge','NORMAL',    'badge-ok');
 
+  // --- Lower tank (sensor @ 50cm, max water height = 50cm) ---
   const wl2   = parseFloat(data.wl2) || 0;
-  const t2pct = Math.min(100, Math.max(0, (wl2/9)*100));
-  document.getElementById('tank2Water').style.height = t2pct+'%';
-  document.getElementById('tank2Pct').textContent    = Math.round(t2pct)+'%';
-  document.getElementById('wl2').textContent         = wl2.toFixed(2)+' cm';
-  document.getElementById('d2').textContent          = (parseFloat(data.d2)||0).toFixed(2)+' cm';
-  document.getElementById('volDisplay').textContent  = (parseFloat(data.vol)||0).toFixed(2)+' L';
-  if      (t2pct >= 90) { setStatus('tank2Status','HIGH LEVEL','status-high'); addNotif('ALARM','Tank 2 HIGH: '+Math.round(t2pct)+'%'); }
-  else if (t2pct <= 10) { setStatus('tank2Status','LOW LEVEL', 'status-low');  addNotif('ALARM','Tank 2 LOW: '+Math.round(t2pct)+'%');  }
-  else                    setStatus('tank2Status','NORMAL',    'status-normal');
+  const d2    = parseFloat(data.d2)  || 0;
+  const vol   = parseFloat(data.vol) || 0;
+  const t2pct = Math.min(100, Math.max(0, (wl2 / 50) * 100));
+  document.getElementById('t2fill').style.height   = t2pct + '%';
+  document.getElementById('t2pct').textContent     = Math.round(t2pct) + '%';
+  document.getElementById('wl2Val').textContent    = wl2.toFixed(2) + ' cm';
+  document.getElementById('d2Val').textContent     = d2.toFixed(2)  + ' cm';
+  document.getElementById('volInTank').textContent = vol.toFixed(2) + ' L';
+  if      (t2pct >= 90) { setBadge('t2badge','HIGH LEVEL','badge-warn'); }
+  else if (t2pct <= 10) { setBadge('t2badge','LOW LEVEL', 'badge-warn'); }
+  else                    setBadge('t2badge','NORMAL',    'badge-ok');
 
-  document.getElementById('volValue').textContent  = (parseFloat(data.vol)||0).toFixed(2);
-  document.getElementById('limeValue').textContent = (parseFloat(data.lime)||0).toFixed(1);
+  // --- Volume & Lime ---
+  const lime = parseFloat(data.lime) || 0;
+  document.getElementById('volVal').textContent  = vol.toFixed(2);
+  document.getElementById('limeVal').textContent = lime.toFixed(1);
 
-  const pump = (data.pump||'OFF').toString().trim();
-  document.getElementById('pumpStatusInTank').textContent = pump;
-  const pumpDot = document.getElementById('pumpDot');
-  const pumpLabel = document.getElementById('pumpLabel');
+  // --- Pump ---
+  const pump = (data.pump || 'OFF').toString().trim().toUpperCase();
+  document.getElementById('pumpInTank').textContent = pump;
+  const ring   = document.getElementById('pumpRing');
+  const status = document.getElementById('pumpStatus');
   if (pump === 'ON') {
-    pumpDot.className = 'pump-dot on';
-    pumpLabel.textContent = 'PUMP RUNNING';
+    ring.classList.add('on');
+    status.textContent = 'PUMP RUNNING';
+    status.style.color = 'var(--green)';
   } else {
-    pumpDot.className = 'pump-dot off';
-    pumpLabel.textContent = 'PUMP STOPPED';
+    ring.classList.remove('on');
+    status.textContent = 'PUMP STOPPED';
+    status.style.color = 'var(--red)';
   }
-  if (prevPump !== null && pump !== prevPump) addNotif('NOTIFY','Pump changed to '+pump);
+  if (prevPump !== null && pump !== prevPump)
+    addNotif('NOTIFY', 'Pump state changed → ' + pump);
   prevPump = pump;
 
-  if (data.uptime) document.getElementById('uptimeDisplay').textContent = data.uptime;
+  // --- Uptime & timestamps ---
+  if (data.uptime) document.getElementById('uptimeVal').textContent = data.uptime;
   document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-GB');
 
-  document.getElementById('connDot').className    = 'conn-dot live';
+  // --- Connection indicator ---
+  document.getElementById('connDot').className   = 'dot live';
   document.getElementById('connLabel').textContent = 'LIVE';
 }
 
+// ============================================================
+//  MQTT  — unique clientId per tab = multiple viewers work
+// ============================================================
 window.addEventListener('load', () => {
   if (typeof mqtt === 'undefined') {
     document.getElementById('connLabel').textContent = 'LIB ERROR';
     return;
   }
 
-  // Generate unique client ID for each browser tab
-  const clientId = 'vat_dash_' + Math.random().toString(16).substr(2, 8) + '_' + Date.now();
+  // Each tab/browser gets a unique client ID — this is what
+  // fixes multiple simultaneous viewers. HiveMQ Cloud rejects
+  // duplicate client IDs, kicking the previous connection.
+  // Using random + timestamp guarantees uniqueness.
+  const clientId = 'vat_viewer_'
+    + Math.random().toString(36).substr(2, 6)
+    + '_' + Date.now().toString(36);
 
   const client = mqtt.connect(BROKER, {
-    clientId: clientId,
-    username: MQTT_USER,
-    password: MQTT_PASS,
-    clean: true,
+    clientId:        clientId,
+    username:        MQTT_USER,
+    password:        MQTT_PASS,
+    clean:           true,       // no persistent session — subscribe-only viewers
     reconnectPeriod: 4000,
-    connectTimeout: 15000,
-    keepalive: 60
+    connectTimeout:  15000,
+    keepalive:       60,
+    protocolVersion: 4           // MQTT 3.1.1 — stable with HiveMQ Cloud
   });
 
   client.on('connect', () => {
-    console.log('[MQTT] Connected to HiveMQ Cloud');
-    document.getElementById('connDot').className    = 'conn-dot connecting';
-    document.getElementById('connLabel').textContent = 'CONNECTED';
-    client.subscribe(TOPIC, { qos: 0 });
+    console.log('[MQTT] Connected as', clientId);
+    document.getElementById('connDot').className    = 'dot connecting';
+    document.getElementById('connLabel').textContent = 'SYNCING';
+    client.subscribe(TOPIC, { qos: 0 }, (err) => {
+      if (!err) {
+        document.getElementById('connLabel').textContent = 'SUBSCRIBED';
+        console.log('[MQTT] Subscribed to', TOPIC);
+      } else {
+        document.getElementById('connLabel').textContent = 'SUB ERROR';
+      }
+    });
   });
 
   client.on('message', (topic, message) => {
-    try { updateDashboard(JSON.parse(message.toString())); }
-    catch(e) { console.error('[MQTT] Parse error:', e); }
+    try {
+      const data = JSON.parse(message.toString());
+      updateDashboard(data);
+    } catch(e) {
+      console.error('[MQTT] Parse error:', e, message.toString());
+    }
   });
 
   client.on('reconnect', () => {
-    document.getElementById('connDot').className    = 'conn-dot connecting';
-    document.getElementById('connLabel').textContent = 'RECONNECTING...';
+    document.getElementById('connDot').className    = 'dot connecting';
+    document.getElementById('connLabel').textContent = 'RECONNECTING';
   });
 
   client.on('offline', () => {
-    document.getElementById('connDot').className    = 'conn-dot';
+    document.getElementById('connDot').className    = 'dot';
     document.getElementById('connLabel').textContent = 'OFFLINE';
   });
 
   client.on('error', (err) => {
-    console.error('[MQTT] Error:', err);
-    document.getElementById('connDot').className    = 'conn-dot';
-    document.getElementById('connLabel').textContent = 'AUTH ERROR';
+    console.error('[MQTT] Error:', err.message);
+    document.getElementById('connDot').className    = 'dot';
+    document.getElementById('connLabel').textContent = 'ERROR';
+  });
+
+  client.on('close', () => {
+    document.getElementById('connDot').className    = 'dot';
+    document.getElementById('connLabel').textContent = 'CLOSED';
   });
 });
 </script>
