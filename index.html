@@ -259,7 +259,7 @@ header::after{
     <div class="badge badge-wait" id="phBadge">WAITING</div>
   </div>
 
-  <!-- Upper Tank -->
+  <!-- Upper Tank (max 22 cm) -->
   <div class="card">
     <div class="card-label">// Leaching VAT — Upper</div>
     <div class="tank-wrap">
@@ -278,7 +278,7 @@ header::after{
     </div>
   </div>
 
-  <!-- Solution Tank Lower -->
+  <!-- Lower Tank (max 25 cm) -->
   <div class="card">
     <div class="card-label">// Solution Tank — Lower</div>
     <div class="tank-wrap">
@@ -330,11 +330,11 @@ header::after{
       </div>
       <div class="pump-thresholds">
         <div class="thresh-item">
-          <div class="thresh-val">3.0 cm</div>
+          <div class="thresh-val">5.0 cm</div>
           <div class="thresh-lbl">SHUTDOWN</div>
         </div>
         <div class="thresh-item">
-          <div class="thresh-val">6.0 cm</div>
+          <div class="thresh-val">8.0 cm</div>
           <div class="thresh-lbl">START</div>
         </div>
       </div>
@@ -429,7 +429,7 @@ function addNotif(type, msg) {
 }
 
 // ============================================================
-//  DASHBOARD UPDATE
+//  DASHBOARD UPDATE (adjusted for new tank heights)
 // ============================================================
 let prevPump = null;
 
@@ -443,10 +443,10 @@ function updateDashboard(data) {
   else if (ph < 6.5)              setBadge('phBadge','LOW',     'badge-warn');
   else                            setBadge('phBadge','NORMAL',  'badge-ok');
 
-  // --- Upper tank (height = 15cm) ---
+  // --- Upper tank (max 22 cm) ---
   const wl1   = parseFloat(data.wl1) || 0;
   const d1    = parseFloat(data.d1)  || 0;
-  const t1pct = Math.min(100, Math.max(0, (wl1 / 15) * 100));
+  const t1pct = Math.min(100, Math.max(0, (wl1 / 22) * 100));
   document.getElementById('t1fill').style.height  = t1pct + '%';
   document.getElementById('t1pct').textContent    = Math.round(t1pct) + '%';
   document.getElementById('wl1Val').textContent   = wl1.toFixed(2) + ' cm';
@@ -455,11 +455,11 @@ function updateDashboard(data) {
   else if (t1pct <= 10) { setBadge('t1badge','LOW LEVEL', 'badge-warn'); }
   else                    setBadge('t1badge','NORMAL',    'badge-ok');
 
-  // --- Lower tank (sensor @ 50cm, max water height = 50cm) ---
+  // --- Lower tank (max 25 cm) ---
   const wl2   = parseFloat(data.wl2) || 0;
   const d2    = parseFloat(data.d2)  || 0;
   const vol   = parseFloat(data.vol) || 0;
-  const t2pct = Math.min(100, Math.max(0, (wl2 / 50) * 100));
+  const t2pct = Math.min(100, Math.max(0, (wl2 / 25) * 100));
   document.getElementById('t2fill').style.height   = t2pct + '%';
   document.getElementById('t2pct').textContent     = Math.round(t2pct) + '%';
   document.getElementById('wl2Val').textContent    = wl2.toFixed(2) + ' cm';
@@ -510,7 +510,6 @@ window.addEventListener('load', () => {
     return;
   }
 
-  // Unique client ID for each viewer – prevents conflicts
   const clientId = 'vat_viewer_' + Math.random().toString(36).substr(2, 8) + '_' + Date.now();
 
   const client = mqtt.connect(BROKER, {
