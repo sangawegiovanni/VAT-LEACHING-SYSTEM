@@ -1,13 +1,13 @@
 # VAT Leaching System – Industrial IoT Monitoring
 
-![Dashboard Preview](./images/dashboard.png)
+![Dashboard Preview]
 <img width="1280" height="960" alt="a5d97303-aaa4-47d0-844a-18f8920a445e" src="https://github.com/user-attachments/assets/03622a9e-1cf2-4d15-9f27-939f95674f3b" />
 
 ## Overview
 
 The **VAT Leaching System** is a real‑time industrial monitoring solution for metallurgical processes. It measures tank levels, pH, temperature, ORP, calculates lime dosage, and controls a circulation pump. Data is sent to a cloud MQTT broker and displayed on a live dashboard accessible from any device. Critical alarms are sent via SMS to six predefined numbers using an HTTP gateway.
 
-![System Architecture](./images/architecture.png)
+![System Architecture]
 
 ---
 
