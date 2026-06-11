@@ -1,16 +1,14 @@
 # VAT Leaching System – Industrial IoT Monitoring
 
-![Dashboard Preview]
-<img width="1280" height="960" alt="a5d97303-aaa4-47d0-844a-18f8920a445e" src="https://github.com/user-attachments/assets/03622a9e-1cf2-4d15-9f27-939f95674f3b" />
+![Dashboard Preview](./images/dashboard.png)
 
 ## Overview
 
-The **VAT Leaching System** is a real‑time industrial monitoring solution for metallurgical processes. It measures tank levels, pH, temperature, ORP, calculates lime dosage, and controls a circulation pump. Data is sent to a cloud MQTT broker and displayed on a live dashboard accessible from any device. Critical alarms are sent via SMS to six predefined numbers using an HTTP gateway.
+The **VAT Leaching System** is a real‑time industrial monitoring solution for metallurgical processes. It measures tank levels, pH, temperature, ORP, calculates lime dosage, and controls a circulation pump. Data is sent to a cloud MQTT broker and displayed on a live dashboard accessible from any device. Critical alarms are sent via **GSM (SIM800C)** to six predefined numbers.
 
-![System Architecture]
+![System Architecture](./images/architecture.png)
 
 ---
-
 
 ## Features
 
@@ -22,7 +20,7 @@ The **VAT Leaching System** is a real‑time industrial monitoring solution for 
 - **Lime dosage calculation** – Based on pH and solution volume.
 - **TFT colour display** – Real‑time tank levels, pH gauge, pump status, notifications.
 - **MQTT cloud publishing** – Public HiveMQ broker, JSON or CSV format.
-- **SMS alerts** – HTTP POST to `zoostudios.us.to/sms/send` when pump turns ON (sends to 6 numbers).
+- **GSM SMS alerts** – SIM800C module sends SMS to six numbers when pump turns ON (direct AT commands, no external gateway).
 - **GitHub Pages dashboard** – Live dashboard accessible worldwide.
 
 ---
@@ -33,12 +31,14 @@ The **VAT Leaching System** is a real‑time industrial monitoring solution for 
 |-----------|--------------|----------|
 | Arduino Mega 2560 | – | 1 |
 | ESP32 Dev Board | – | 1 |
+| GSM module | SIM800C (UART) | 1 |
 | Ultrasonic sensor (upper tank) | A0221AU (UART) | 1 |
 | Ultrasonic sensor (lower tank) | HC‑SR04 | 1 |
 | pH sensor kit | Analog (BNC) | 1 |
 | Relay module | 5V | 1 |
 | TFT display | ILI9341 (SPI) | 1 |
 | Power supply | 5V / 2A (for ESP32 + Mega) | 2 |
+| External 5V/2A supply | for SIM800C | 1 |
 | Jumper wires | – | many |
 
 ![Hardware Setup](./images/hardware.jpg)
@@ -70,10 +70,15 @@ The **VAT Leaching System** is a real‑time industrial monitoring solution for 
 | GPIO26 (RX1) | Mega TX2 (pin 16) |
 | GPIO27 (TX1) | Mega RX2 (pin 17) – optional |
 | GND | Mega GND (critical) |
+| GPIO16 (RX2) | SIM800C TXD |
+| GPIO17 (TX2) | SIM800C RXD |
+| 5V | External 5V/2A supply (shared ground) |
 
 ![Wiring Diagram](./images/wiring.jpg)
 
-> **⚠️ Important:** A common ground wire between Mega and ESP32 is mandatory for clean UART communication.
+> **⚠️ Important:**  
+> - Common ground between Mega and ESP32 is mandatory for clean UART communication.  
+> - SIM800C must be powered from an **external 5V/2A supply** – the ESP32’s 5V pin cannot provide enough current.
 
 ---
 
@@ -93,7 +98,10 @@ Upload `esp32_vat_leaching.ino` to the ESP32. It:
 - Listens to Serial1 (GPIO26/27) for Mega data.
 - Parses the CSV lines (robust parser prints raw and parsed values).
 - Publishes JSON to MQTT public broker `broker.hivemq.com:1883`.
-- Sends HTTP POST SMS when pump turns ON.
+- **Controls SIM800C via Serial2 (GPIO16/17)**:
+  - Initialises the module at 115200 baud.
+  - Sends SMS to six predefined numbers when pump turns ON.
+  - Handles incoming calls from an authorised number (sends status SMS and auto‑answers/hangs up).
 
 ### 3. Web Dashboard
 
@@ -123,24 +131,74 @@ The dashboard (`index.html`) is hosted on **GitHub Pages**. It:
 2. **Upload ESP32 code** – Select board “ESP32 Dev Module”, COM port, 115200 baud.
 3. **Wire hardware** according to the diagram above.
 4. **Connect common ground** between Mega and ESP32.
-5. **Open Serial Monitor** for ESP32 – you should see clean `[RAW] DATA,...` lines.
-6. **Adjust pH offset** – In Mega code, `PH_OFFSET` is currently `-4.73`. Calibrate by measuring pH in neutral water and adjusting until reading shows 7.0.
-7. **Deploy dashboard** – Push `index.html` to GitHub repository, enable Pages.
-8. **Access dashboard** – Open `https://yourusername.github.io/repo-name`.
+5. **Power SIM800C externally** (5V/2A). Connect its TXD/RXD to ESP32 GPIO16/17.
+6. **Open Serial Monitor** for ESP32 – you should see `[GSM] SIM800C ready` and clean `[RAW] DATA,...` lines.
+7. **Adjust pH offset** – In Mega code, `PH_OFFSET` is currently `-4.73`. Calibrate by measuring pH in neutral water and adjusting until reading shows 7.0.
+8. **Deploy dashboard** – Push `index.html` to GitHub repository, enable Pages.
+9. **Access dashboard** – Open `https://yourusername.github.io/repo-name`.
 
 ---
 
-## SMS Gateway
+## GSM SMS Configuration
 
-The ESP32 sends an HTTP POST to `https://zoostudios.us.to/sms/send` with JSON body:
+The ESP32 uses a SIM800C module on Serial2 (GPIO16/17) at 115200 baud. It sends SMS to the following numbers (without ‘+’ prefix) when the pump turns ON:
+255xxxxxxx
 
-```json
-{
-  "source_addr": "androidSMSGateway",
-  "message": "VAT Leaching System\nPump: ON\npH: 8.22\nVolume: 3.90 L",
-  "recipients": [
-    { "recipient_id": "1", "dest_addr": "255637341780" },
-    { "recipient_id": "2", "dest_addr": "255692007363" },
-    ...
-  ]
-}
+text
+
+You can change these numbers in the ESP32 code (`SMS_NUMBERS` array). The authorised caller number (for remote status request) is also configurable.
+
+**Example SMS content:**
+VAT LEACHING SYSTEM
+====================
+STATUS: PUMP ON
+
+UPPER TANK
+Dist: 21.7 cm
+Level: 0.3 cm
+
+LOWER TANK
+Dist: 19.5 cm
+Level: 2.5 cm
+Vol: 3.90 L
+Lime: 1.5 g
+
+pH: 8.22
+
+text
+
+The module also detects incoming calls: if the call comes from the authorised number, it sends a status SMS and then hangs up; other callers are rejected.
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Solution |
+|---------|--------------|----------|
+| Garbage on ESP32 Serial Monitor | Missing ground between Mega and ESP32 | Connect a GND wire |
+| No `[RAW]` lines | Wrong baud rate or swapped TX/RX | Set both to 9600, check wiring |
+| GSM not responding | Insufficient power or wrong baud | Use external 5V/2A supply, set Serial2 to 115200 |
+| pH reads 14.00 or 0.00 | Probe not connected or wrong offset | Calibrate using `calib` command |
+| Lower tank always 0% | HC‑SR04 not triggered or out of range | Check pins 28/30, distance should be < 450cm |
+| Dashboard shows “OFFLINE” | MQTT broker not reachable | Check ESP32 Wi‑Fi, broker URL |
+
+---
+
+## Future Improvements
+
+- Add temperature and ORP sensors.
+- Use TLS/SSL for MQTT with certificate.
+- Implement database logging (InfluxDB + Grafana).
+- Add OTA updates for ESP32.
+
+---
+
+## License
+
+This project is open‑source. Feel free to use and modify for your own industrial monitoring needs.
+
+---
+
+## Contact
+
+For questions or contributions, please open an issue on the GitHub repository.
