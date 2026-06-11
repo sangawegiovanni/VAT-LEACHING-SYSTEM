@@ -1,16 +1,18 @@
 # VAT Leaching System – Industrial IoT Monitoring
 
-![Dashboard Preview](./images/dashboard.png)
+Dashboard Preview
+<img width="1280" height="960" alt="a5d97303-aaa4-47d0-844a-18f8920a445e" src="https://github.com/user-attachments/assets/80975486-4813-47c5-ae64-64446f660a2d" />
 
 ## Overview
 
 The **VAT Leaching System** is a real‑time industrial monitoring solution for metallurgical processes. It measures tank levels, pH, temperature, ORP, calculates lime dosage, and controls a circulation pump. Data is sent to a cloud MQTT broker and displayed on a live dashboard accessible from any device. Critical alarms are sent via **GSM (SIM800C)** to six predefined numbers.
 
-![System Architecture](./images/architecture.png)
+System Architecture
 
 ---
 
 ## Features
+
 
 - **Two‑tank monitoring**  
   - Upper tank (Leaching VAT): A0221AU UART ultrasonic sensor (max 22 cm water level).  
@@ -41,7 +43,7 @@ The **VAT Leaching System** is a real‑time industrial monitoring solution for 
 | External 5V/2A supply | for SIM800C | 1 |
 | Jumper wires | – | many |
 
-![Hardware Setup](./images/hardware.jpg)
+Hardware Setup
 
 ---
 
@@ -74,7 +76,7 @@ The **VAT Leaching System** is a real‑time industrial monitoring solution for 
 | GPIO17 (TX2) | SIM800C RXD |
 | 5V | External 5V/2A supply (shared ground) |
 
-![Wiring Diagram](./images/wiring.jpg)
+Wiring Diagram
 
 > **⚠️ Important:**  
 > - Common ground between Mega and ESP32 is mandatory for clean UART communication.  
@@ -112,9 +114,12 @@ The dashboard (`index.html`) is hosted on **GitHub Pages**. It:
 
 **Live URL:** `https://sangawegiovanni.github.io/VAT-LEACHING-SYSTEM`
 
-![Dashboard Screenshot](./images/dashboard_screenshot.jpg)
+Dashboard Screenshot
+
+<img width="540" height="1160" alt="298846ba-a591-4389-8e24-6fab7af32df1" src="https://github.com/user-attachments/assets/ca405c37-9ef0-469a-8adc-d15392c5d343" />
 
 ---
+
 
 ## Installation & Setup
 
@@ -189,13 +194,8 @@ The module also detects incoming calls: if the call comes from the authorised nu
 - Add temperature and ORP sensors.
 - Use TLS/SSL for MQTT with certificate.
 - Implement database logging (InfluxDB + Grafana).
-- Add OTA updates for ESP32.
+- Add OTA updates for ESP32<img 
 
----
-
-## License
-
-This project is open‑source. Feel free to use and modify for your own industrial monitoring needs.
 
 ---
 
